@@ -19,28 +19,6 @@ from SpaceX_widget import SpaceXWidget, ControleTir
 
 FREQ = .1
 
-
-class Recepteur:
-    """Capteur alimenté par la liaison série"""
-    def __init__(self, nom=""):
-        try:
-            self.ser = serial.Serial('/dev/cu.usbmodem1411', 9600)
-        except:
-            print("no reception")
-        self.nom = nom
-        self.data = .0
-        Clock.schedule_interval(self.recepteur_update, FREQ)
-
-    def recepteur_update(self, dt):
-        try:
-            value = float(self.ser.readline().strip())
-            print(value/1000)
-            if value/1000 < 10:
-                self.data = value/1000
-        except:
-            self.data = 0
-
-
 class CapteurTest:
     """Classe de dévelopement de l'application
     A remplacer plus tard par l'acquisition des signaux réels du port série"""
@@ -67,7 +45,6 @@ gyro_z = CapteurTest("Inclinaison_z", 0.6)
 gps_lat = CapteurTest("GPS_lat", 1)
 gps_long = CapteurTest("GPS_long", 1)
 vide = CapteurTest("vide", 0)
-reception = Recepteur()
 # ---- Capteurs de test ------
 
 
@@ -173,7 +150,6 @@ class GroundControlStationApp(App):
         layout.add_widget(Graphique(gyro_z, "inclinaison_z"))
         layout.add_widget(Graphique(gps_lat, "GPS_L"))
         layout.add_widget(Graphique(gps_long, "GPS_l"))
-        layout.add_widget(Graphique(reception, "Recepteur"))
         box.add_widget(layout)
         box.add_widget(SpaceXWidget(my_controle_tir))
         #box.add_widget(layout)
