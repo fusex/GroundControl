@@ -4,6 +4,7 @@
 import socket
 from random import random
 from time import sleep
+import time
 
 FREQ=.1
 
@@ -17,10 +18,10 @@ class Recepteur:
         print("Listening on port:{}".format(port))
         self.server.listen()
 
-    def send(self, msg, tag="NULL", timestamp="00000000"):
+    def send(self, msg, tag="NULL", timestamp=0):
         if self.client:
-            print("Sending message: "+ msg)
-            rawmsg = timestamp + " " + tag + ": " + msg + "\n"
+            rawmsg = "{:.4f} {}: {}\n".format(timestamp, tag, msg)
+            print("Sending message: "+ rawmsg)
             self.client.sendall(rawmsg.encode())
 
     def wait(self):
@@ -28,7 +29,6 @@ class Recepteur:
         self.client, self.clientAddress = self.server.accept()
         print("Accepted a connection request from {}:{}"
               .format(self.clientAddress[0], self.clientAddress[1]))
-
 
 class Capteur:
     def __init__(self, nom="", coef=1.):
@@ -56,11 +56,17 @@ capteurs = {
     "gps_long" : Capteur("GPS_long", 1),
     "vide"     : Capteur("vide", 1),
 }
-# ---- Capteurs de test ------
+
+
+def gettimestamp():
+    return time.time() - t0
+
+t0 = time.time()
 recepteur = Recepteur()
 while (True):
     if not recepteur.client:
         recepteur.wait()
     for name, capteur in capteurs.items():
-        recepteur.send(str(capteur.data), tag=name)
+        ts = time.time()
+        recepteur.send(str(capteur.data), name, gettimestamp())
     sleep(FREQ)
