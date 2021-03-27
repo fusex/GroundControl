@@ -4,6 +4,7 @@
 import socket, errno, time
 from random import random
 from time import sleep
+import threading
 
 FREQ=.1
 
@@ -63,12 +64,13 @@ capteurs = {
 def gettimestamp():
     return time.time() - t0
 
-t0 = time.time()
-recepteur = Recepteur()
-while (True):
+def main():
+    threading.Timer(FREQ, main).start()
     if not recepteur.connected:
         recepteur.wait()
     for name, capteur in capteurs.items():
-        ts = time.time()
         recepteur.send('{:.4f}'.format(capteur.data), name, gettimestamp())
-    sleep(FREQ)
+
+t0 = time.time()
+recepteur = Recepteur()
+main()
