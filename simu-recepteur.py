@@ -1,34 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import socket
+import socket, errno, time
 from random import random
 from time import sleep
-import time
 
 FREQ=.1
 
 class Recepteur:
-    def __init__(self, port=8889):
-        self.clientAddress   = 0
-        self.client = 0
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server.bind(('',port))
-        print("Listening on port:{}".format(port))
-        self.server.listen()
+    def __init__(self, host="127.0.0.1", port=8889):
+        self.connected = False
+        self.host = host
+        self.port = port
 
     def send(self, msg, tag="NULL", timestamp=0):
-        if self.client:
+        if self.connected:
             rawmsg = "{:.4f} {}: {}\n".format(timestamp, tag, msg)
-            print("Sending message: "+ rawmsg)
-            self.client.sendall(rawmsg.encode())
+            print("Sending message: "+ rawmsg, end = '')
+            try:
+                self.conn.sendall(rawmsg.encode())
+            except Exception as e:
+                self.connected = False
 
     def wait(self):
-        print("Waiting for new connections: ")
-        self.client, self.clientAddress = self.server.accept()
-        print("Accepted a connection request from {}:{}"
-              .format(self.clientAddress[0], self.clientAddress[1]))
+        print("Connecting to host:{} and port:{}"
+              .format(self.host, self.port))
+        try:
+            self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.conn.connect((self.host, self.port))
+            self.connected = True
+        except Exception as e:
+            self.conn.close()
+            self.connected = False
 
 class Capteur:
     def __init__(self, nom="", coef=1.):
@@ -57,16 +60,15 @@ capteurs = {
     "vide"     : Capteur("vide", 1),
 }
 
-
 def gettimestamp():
     return time.time() - t0
 
 t0 = time.time()
 recepteur = Recepteur()
 while (True):
-    if not recepteur.client:
+    if not recepteur.connected:
         recepteur.wait()
     for name, capteur in capteurs.items():
         ts = time.time()
-        recepteur.send(str(capteur.data), name, gettimestamp())
+        recepteur.send('{:.4f}'.format(capteur.data), name, gettimestamp())
     sleep(FREQ)
