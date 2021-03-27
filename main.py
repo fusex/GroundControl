@@ -30,11 +30,10 @@ class CapteurTest:
 
     def capteur_update(self, dt):
         if self.nom == "Altitude":
-            self.data = self.data + random() * 2
+            self.data += random() * 2
         else:
             self.data = self.coef * (random() * 200 - 50) + 50
         # print(self.nom + " : " + str(self.data))
-
 
 # ---- Capteurs de test ------
 vitesse = CapteurTest("vitesse", 0.3)
@@ -44,7 +43,7 @@ gyro_y = CapteurTest("Inclinaison_y", 0.6)
 gyro_z = CapteurTest("Inclinaison_z", 0.6)
 gps_lat = CapteurTest("GPS_lat", 1)
 gps_long = CapteurTest("GPS_long", 1)
-vide = CapteurTest("vide", 0)
+vide = CapteurTest("vide", 1)
 # ---- Capteurs de test ------
 
 
