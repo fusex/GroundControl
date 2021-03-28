@@ -47,26 +47,56 @@ class Application():
                     ts  = tokens[0]
                     tag = tokens[1][:-1]
                     val = tokens[2][:-1]
-                    self.cappend(tag, (ts, val))
+                    self.queue[tag].cappend((ts, val))
+                    print(self.queue[tag].cget())
                 except Exception as e:
                     pass
 
-    def cappend(self, sensor_name, item):
-        try:
-            self.queue[sensor_name] += {item}
-            pp.pprint(self.queue)
-        except Exception as e:
-            pass
+class cdataset():
+    def __str__(self):
+        return "{}-{}, {}".format(self.start, self.end, str(self.data))
+
+    def __repr__(self):
+        return "{}-{}, {}".format(self.start, self.end, str(self.data))
+
+    def __init__(self, capacity=10):
+        self.start = 0
+        self.end = 0
+        self.capacity = capacity
+        self.data = [None] * capacity
+
+    def cappend(self, item):
+        self.data[self.end] = item
+        self.end += 1
+
+        if self.end == self.capacity:
+            self.end = 0
+
+        if self.end - self.start <= 0:
+            self.start += 1
+
+        if self.start == self.capacity:
+            self.start = 0
+
+        #pp.pprint(self)
+
+    def cget(self):
+        if self.end < self.start:
+            return self.data[self.start:self.capacity] + \
+                   self.data[:self.end]
+
+        return self.data[self.start:self.end]
+
 
 sensorslist = {
-    "vitesse"  : [],
-    "altitude" : [],
-    "gyro_x"   : [],
-    "gyro_y"   : [],
-    "gyro_z"   : [],
-    "vide"     : [],
-    "gps_lat"  : [],
-    "gps_long" : []
+    "vitesse"  : cdataset(),
+    "altitude" : cdataset(),
+    "gyro_x"   : cdataset(),
+    "gyro_y"   : cdataset(),
+    "gyro_z"   : cdataset(),
+    "vide"     : cdataset(),
+    "gps_lat"  : cdataset(),
+    "gps_long" : cdataset()
 }
 
 app = Application(sensorslist)
