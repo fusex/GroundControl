@@ -8,7 +8,7 @@ import threading
 
 FREQ=.1
 
-class Recepteur:
+class DataForwarder:
     def __init__(self, host="127.0.0.1", port=8889):
         self.connected = False
         self.host = host
@@ -34,7 +34,7 @@ class Recepteur:
             self.conn.close()
             self.connected = False
 
-class Capteur:
+class Sensor:
     def __init__(self, nom="", coef=1.):
         self.nom = nom
         self.idata = .0
@@ -49,16 +49,15 @@ class Capteur:
 
         return self.idata
 
-# ---- Capteurs de test ------
-capteurs = {
-    "vitesse"  : Capteur("vitesse", 0.3),
-    "altitude" : Capteur("Altitude", 0.1),
-    "gyro_x"   : Capteur("Inclinaison_x", 0.6),
-    "gyro_y"   : Capteur("Inclinaison_y", 0.6),
-    "gyro_z"   : Capteur("Inclinaison_z", 0.6),
-    "gps_lat"  : Capteur("GPS_lat", 1),
-    "gps_long" : Capteur("GPS_long", 1),
-    "vide"     : Capteur("vide", 1),
+sensors = {
+    "vitesse"  : Sensor("vitesse", 0.3),
+    "altitude" : Sensor("Altitude", 0.1),
+    "gyro_x"   : Sensor("Inclinaison_x", 0.6),
+    "gyro_y"   : Sensor("Inclinaison_y", 0.6),
+    "gyro_z"   : Sensor("Inclinaison_z", 0.6),
+    "gps_lat"  : Sensor("GPS_lat", 1),
+    "gps_long" : Sensor("GPS_long", 1),
+    "vide"     : Sensor("vide", 1),
 }
 
 def gettimestamp():
@@ -66,11 +65,11 @@ def gettimestamp():
 
 def main():
     threading.Timer(FREQ, main).start()
-    if not recepteur.connected:
-        recepteur.wait()
-    for name, capteur in capteurs.items():
-        recepteur.send('{:.4f}'.format(capteur.data), name, gettimestamp())
+    if not forwarder.connected:
+        forwarder.wait()
+    for name, sensor in sensors.items():
+        forwarder.send('{:.4f}'.format(sensor.data), name, gettimestamp())
 
 t0 = time.time()
-recepteur = Recepteur()
+forwarder = DataForwarder()
 main()
